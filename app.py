@@ -52,12 +52,12 @@ def handle_message(event):
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
-        {"role": "system", "content": "你是一個親切、清楚、專業的 AI 助理，會用簡潔清楚的方式回覆使用者問題。"},
+        {"role": "system","content": "你是 MoBagel 的 AI 客服小編，負責協助回答客戶的問題。你回覆的語氣要親切、有禮、清楚，並維持品牌專業形象。請使用繁體中文回覆，必要時可加上 emoji 讓訊息更親和。若問題超出你的範圍，可以鼓勵使用者聯絡真人客服。"}
         {"role": "user", "content": prompt}
         ],
         temperature=0.7,
         top_p=1,
-        timeout=10
+        timeout=6
     )
     reply_text = response.choices[0].message.content.strip()
 
