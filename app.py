@@ -36,10 +36,13 @@ def callback():
         abort(400)
     return 'OK'
 
+user_sessions = {}  # 儲存每個使用者的對話歷史
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    user_id = event.source.user_id
     user_message = event.message.text.strip()
-
+    
     # 如果符合固定關鍵字，就自動回覆
     for keyword, reply in static_replies.items():
         if keyword in user_message:
@@ -47,24 +50,39 @@ def handle_message(event):
             return
 
     # 其他情況交由 GPT 回答
-    prompt = user_message
+    # 初始化對話歷史（每位用戶獨立）
+    if user_id not in user_sessions:
+        user_sessions[user_id] = [
+            {
+                "role": "system",
+                "content": "你是 MoBagel 的 AI 客服小編，負責協助回答客戶的問題。你回覆的語氣要親切、有禮、清楚，並維持品牌專業形象。請使用繁體中文回覆，必要時可加上 emoji 讓訊息更親和。若問題超出你的範圍，可以鼓勵使用者聯絡真人客服。"
+            }
+        ]
 
+    # 加入本次提問
+    user_sessions[user_id].append({"role": "user", "content": user_message})
+
+    # 呼叫 GPT 回答
     try:
         response = client.chat.completions.create(
             model="gpt-4",
-            messages=[
-                {"role": "system", "content": "你是 MoBagel 的 AI 客服小編，負責協助回答客戶的問題。你回覆的語氣要親切、有禮、清楚，並維持品牌專業形象。請使用繁體中文回覆，必要時可加上 emoji 讓訊息更親和。若問題超出你的範圍，可以鼓勵使用者聯絡真人客服。"},
-                {"role": "user", "content": user_message}
-            ],
+            messages=user_sessions[user_id],
             temperature=0.7,
             top_p=1,
             timeout=20
         )
         reply_text = response.choices[0].message.content.strip()
+
+        # 加入 GPT 回覆進歷史
+        user_sessions[user_id].append({"role": "assistant", "content": reply_text})
+
+        # 限制歷史長度（避免過長）
+        user_sessions[user_id] = user_sessions[user_id][-50:]
+
     except Exception as e:
         print(f"[GPT ERROR] {e}")
         reply_text = "目前伺服器有點慢，我暫時無法即時回覆😥，您可以稍後再試一次～"
-    
+
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
 @app.route("/", methods=["GET"])
