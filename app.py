@@ -1,6 +1,6 @@
 import os
 import json
-import openai
+from openai import OpenAI
 from dotenv import load_dotenv
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
@@ -15,12 +15,12 @@ load_dotenv()
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
 LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=OPENAI_API_KEY) 
 
 # 初始化套件
 app = Flask(__name__)
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
-openai.api_key = OPENAI_API_KEY
 
 # 載入固定回覆內容
 with open('static_replies.json', encoding='utf-8') as f:
@@ -48,14 +48,21 @@ def handle_message(event):
 
     # 其他情況交由 GPT 回答
     prompt = f"使用者說：「{user_message}」，請適當回應"
-    response = openai.ChatCompletion.create(
+
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
+        timeout=10
     )
     reply_text = response.choices[0].message.content.strip()
 
+
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply_text))
 
+@app.route("/", methods=["GET"])
+def index():
+    return "LINE Chatbot is running!", 200
+    
 # Render 會從這裡啟動
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
