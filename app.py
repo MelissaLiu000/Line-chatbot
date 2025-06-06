@@ -47,11 +47,16 @@ def handle_message(event):
             return
 
     # 其他情況交由 GPT 回答
-    prompt = f"使用者說：「{user_message}」，請適當回應"
+    prompt = user_message
 
     response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+        {"role": "system", "content": "你是一個親切、清楚、專業的 AI 助理，會用簡潔清楚的方式回覆使用者問題。"},
+        {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
+        top_p=1,
         timeout=10
     )
     reply_text = response.choices[0].message.content.strip()
