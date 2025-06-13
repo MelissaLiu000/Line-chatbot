@@ -49,7 +49,9 @@ def handle_message(event):
     # 其他情況交由 GPT 回答
     # 初始化對話歷史（每位用戶獨立）
     if user_id not in user_sessions:
-        user_sessions[user_id] = [{"role": "system", "content": "請用繁體中文回答使用者的問題。"}]
+        user_sessions[user_id] = [
+            {"role": "system", "content": "請用繁體中文回答使用者的問題。"}
+        ]
 
     # 加入本次提問
     user_sessions[user_id].append({"role": "user", "content": user_message})
