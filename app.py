@@ -1,15 +1,12 @@
 import os
 import json
 from openai import OpenAI
-from dotenv import load_dotenv
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from linebot.exceptions import InvalidSignatureError
 
 
-# 載入 .env
-load_dotenv()
 
 # 讀取環境變數（Render 也會從環境變數注入）
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
