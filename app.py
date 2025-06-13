@@ -49,12 +49,7 @@ def handle_message(event):
     # 其他情況交由 GPT 回答
     # 初始化對話歷史（每位用戶獨立）
     if user_id not in user_sessions:
-        user_sessions[user_id] = [
-            {
-                "role": "system",
-                "content": "你是 MoBagel 的 AI 客服小編，負責協助回答客戶的問題。你回覆的語氣要親切、有禮、清楚，並維持品牌專業形象。請使用繁體中文回覆，必要時可加上 emoji 讓訊息更親和。若問題超出你的範圍，可以鼓勵使用者聯絡真人客服。"
-            }
-        ]
+        user_sessions[user_id] = []
 
     # 加入本次提問
     user_sessions[user_id].append({"role": "user", "content": user_message})
