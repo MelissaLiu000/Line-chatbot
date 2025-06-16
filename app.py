@@ -63,7 +63,7 @@ def handle_message(event):
                 messages=user_sessions[user_id],
                 temperature=0.7,
                 top_p=1,
-                timeout=30
+                #timeout=30
             )
             reply_text = response.choices[0].message.content.strip()
             user_sessions[user_id].append({"role": "assistant", "content": reply_text})
